@@ -9,6 +9,8 @@ const pool = new Pool({
 
 // Command-line arguments
 const cmdArgs = process.argv.slice(2);
+const cohortName = cmdArgs[0] || 'JUL02';
+const values = [cohortName];
 
 pool.query(`
   SELECT teachers.name AS teacher, cohorts.name AS cohort, COUNT(assistance_requests.*) AS total_assistances
@@ -16,10 +18,10 @@ pool.query(`
   JOIN assistance_requests ON teachers.id = teacher_id
   JOIN students ON students.id = student_id
   JOIN cohorts ON cohorts.id = cohort_id
-  WHERE cohorts.name = '${cmdArgs[0] || 'JUL02'}'
+  WHERE cohorts.name = $1
   GROUP BY teachers.name, cohorts.name
   ORDER BY teachers.name;
-  `)
+  `, values)
   .then(res => {
     res.rows.forEach(teacher => {
       console.log(`${teacher.cohort}: ${teacher.teacher}`);
